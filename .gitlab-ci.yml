@@ -1,0 +1,11 @@
+
+image: python:3.13
+
+stages:
+  - test
+
+run-test:
+  stage: test
+  script:
+    - pip install fastapi "uvicorn[standard]" pytest httpx
+    - pytest -v
