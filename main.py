@@ -1,6 +1,7 @@
+"""FastAPI application for the DevOps TP3 project."""
 import socket
-from fastapi import FastAPI
-from fastapi import HTTPException
+
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -8,22 +9,29 @@ app = FastAPI()
 
 @app.get("/")
 def read_root():
-    return {"message": "it works!"};
+    """Return the welcome message."""
+    return {"message": "it works!"}
+
+
 @app.get("/addition")
 def addition(a: float, b: float):
+    """Add two numbers."""
     return {"result": a + b}
+
+
 def home():
+    """Return the home message."""
     return {"message": "it works!"}
 
 
 @app.get("/greeting")
 def greeting(name: str):
-    # Nom du PC qui héberge l'application
+    """Return a greeting with the computer hostname and IP address."""
     hostname = socket.gethostname()
 
-    # Adresse IPv4 de l'interface utilisée pour sortir vers Internet
     ip = "Unavailable"
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
     try:
         sock.connect(("8.8.8.8", 80))
         ip = sock.getsockname()[0]
@@ -38,49 +46,75 @@ def greeting(name: str):
         "hostname": hostname,
         "IP": ip
     }
+
+
 class Numbers(BaseModel):
+    """Represent two numbers for multiplication."""
     a: float
     b: float
 
+
 @app.post("/multiply")
 def multiply(numbers: Numbers):
-    return {"result": numbers.a * numbers.b, "developper": "Dev1"}
+    """Multiply two numbers."""
+    return {
+        "result": numbers.a * numbers.b,
+        "developper": "Dev1"
+    }
 
 
 class DivideRequest(BaseModel):
+    """Represent two numbers for division."""
     a: float
     b: float
 
 
 @app.post("/divide")
 def divide(payload: DivideRequest):
+    """Divide two numbers and prevent division by zero."""
     if payload.b == 0:
-        raise HTTPException(status_code=400, detail="Division by zero is not allowed")
+        raise HTTPException(
+            status_code=400,
+            detail="Division by zero is not allowed"
+        )
+
     return {"result": payload.a / payload.b}
 
-@app.delete("/remove/{id}")
-def remove_item(id: int):
-    return {"message": f"Item {id} removed"}
+
+@app.delete("/remove/{item_id}")
+def remove_item(item_id: int):
+    """Remove an item using its ID."""
+    return {"message": f"Item {item_id} removed"}
+
+
 @app.get("/soustraction")
 def soustraction(a: float, b: float):
+    """Subtract the second number from the first."""
     return {"result": a - b}
-# ---------- PUT /update/{id} ----------
+
 
 class UpdateRequest(BaseModel):
+    """Represent the data required to update an item."""
     name: str
     value: float
 
 
-# "base de données" en mémoire (simulée)
+# Simulated in-memory database
 items_db: dict[int, dict] = {
     1: {"name": "item1", "value": 10.0},
     2: {"name": "item2", "value": 20.0},
 }
 
 
-@app.put("/update/{id}")
-def update_item(id: int, payload: UpdateRequest):
-    if id not in items_db:
+@app.put("/update/{item_id}")
+def update_item(item_id: int, payload: UpdateRequest):
+    """Update an existing item."""
+    if item_id not in items_db:
         raise HTTPException(status_code=404, detail="Item not found")
-    items_db[id] = {"name": payload.name, "value": payload.value}
-    return {"id": id, "item": items_db[id]}
+
+    items_db[item_id] = {
+        "name": payload.name,
+        "value": payload.value
+    }
+
+    return {"id": item_id, "item": items_db[item_id]}
