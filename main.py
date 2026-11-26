@@ -61,7 +61,9 @@ def divide(payload: DivideRequest):
 @app.delete("/remove/{id}")
 def remove_item(id: int):
     return {"message": f"Item {id} removed"}
-
+@app.get("/soustraction")
+def soustraction(a: float, b: float):
+    return {"result": a - b}
 # ---------- PUT /update/{id} ----------
 
 class UpdateRequest(BaseModel):
